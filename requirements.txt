@@ -63,13 +63,3 @@ websockets==15.0.1
 
 
 
-
-
-
-//echo "# fastapi_socialmedia_app" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/Gabbzgreat/fastapi_socialmedia_app.git
-git push -u origin main
