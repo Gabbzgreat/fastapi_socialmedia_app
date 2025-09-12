@@ -13,7 +13,7 @@ db_url = os.getenv("DATABASE_URL")
 if db_url:
     # Heroku gives postgres:// — SQLAlchemy expects postgresql+psycopg2://
     if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
     # Ensure SSL on Heroku
     if "sslmode=" not in db_url:
         db_url += ("&" if "?" in db_url else "?") + "sslmode=require"
