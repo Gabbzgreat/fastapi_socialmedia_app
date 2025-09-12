@@ -1,44 +1,33 @@
+# app/database.py
+import os
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import urllib.parse
-from .config import settings
-# import psycopg2
-# from psycopg2.extras import RealDictCursor
-# import time
-
-
-
-
-
-password = urllib.parse.quote_plus(settings.database_password)
-
-
-SQL_ALCHEMY_DATABASE_URL=f"postgresql://{settings.database_username}:{password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
-
-engine = create_engine(SQL_ALCHEMY_DATABASE_URL)
-
-SessionLocal = sessionmaker(autocommit=False,autoflush=False,bind=engine)
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 Base = declarative_base()
 
+db_url = os.getenv("DATABASE_URL")
+
+if db_url:
+    # Heroku gives postgres:// … SQLAlchemy expects postgresql://
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    # Force SSL for Heroku Postgres
+    if "sslmode=" not in db_url:
+        db_url += ("&" if "?" in db_url else "?") + "sslmode=require"
+else:
+    # Local fallback (optional)
+    from .config import settings
+    db_url = (
+        f"postgresql://{settings.database_username}:{settings.database_password}"
+        f"@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
+    )
+
+engine = create_engine(db_url, pool_pre_ping=True)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 def get_db():
-    db=SessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-
-
-
-# while True:
-#     try:
-#         conn=psycopg2.connect(host='localhost',database='fastapi',user='postgres',password='Gabbzgreat2001#@',cursor_factory=RealDictCursor)
-#         cursor = conn.cursor()
-#         print("Database connection was successful")
-#         break
-#     except Exception as error:
-#         print("Database connection failed")
-#         print("Error",error)
-#         time.sleep(2)
